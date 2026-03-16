@@ -1,12 +1,19 @@
 export interface User {
   id: number;
-  cnpj: string;
   name: string;
   email: string;
 }
 
+export interface Company {
+  id: number;
+  user_id: number;
+  cnpj: string;
+  name: string;
+}
+
 export interface Client {
   id: number;
+  company_id: number;
   name: string;
   phone: string | null;
   email: string | null;
@@ -16,6 +23,7 @@ export interface Client {
 
 export interface Transaction {
   id: number;
+  company_id: number;
   client_id: number | null;
   client_name?: string;
   type: 'sale' | 'payment' | 'expense' | 'income';
@@ -41,6 +49,7 @@ const API_BASE = '/api';
 
 // Helper to get token
 const getToken = () => localStorage.getItem('token');
+let activeCompanyId: number | null = null;
 
 // Helper for authenticated requests
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
@@ -48,6 +57,7 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const headers = {
     ...options.headers,
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(activeCompanyId ? { 'x-company-id': String(activeCompanyId) } : {}),
   } as Record<string, string>;
 
   if (options.body && !(options.body instanceof FormData)) {
@@ -72,8 +82,12 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 }
 
 export const api = {
+  setActiveCompanyId: (id: number) => {
+    activeCompanyId = id;
+  },
+
   // Auth
-  register: async (data: any): Promise<{ token: string; user: User }> => {
+  register: async (data: any): Promise<{ token: string; user: User; companies: Company[] }> => {
     const res = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -86,7 +100,7 @@ export const api = {
     return res.json();
   },
 
-  login: async (data: any): Promise<{ token: string; user: User }> => {
+  login: async (data: any): Promise<{ token: string; user: User; companies: Company[] }> => {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -99,8 +113,16 @@ export const api = {
     return res.json();
   },
 
-  getMe: async (): Promise<{ user: User }> => {
+  getMe: async (): Promise<{ user: User; companies: Company[] }> => {
     return fetchWithAuth(`${API_BASE}/auth/me`);
+  },
+
+  // Companies
+  createCompany: async (data: Partial<Company>): Promise<Company> => {
+    return fetchWithAuth(`${API_BASE}/companies`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 
   // Clients

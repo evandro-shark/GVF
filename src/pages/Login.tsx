@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Wallet } from 'lucide-react';
 
 export function Login() {
-  const [cnpj, setCnpj] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,10 +18,8 @@ export function Login() {
     setIsLoading(true);
 
     try {
-      // Basic CNPJ cleanup
-      const cleanCnpj = cnpj.replace(/\D/g, '');
-      const response = await api.login({ cnpj: cleanCnpj, password });
-      login(response.token, response.user);
+      const response = await api.login({ email, password });
+      login(response.token, response.user, response.companies);
       navigate('/');
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login. Verifique suas credenciais.');
@@ -62,18 +60,18 @@ export function Login() {
             )}
 
             <div>
-              <label htmlFor="cnpj" className="block text-sm font-medium text-zinc-700">
-                CNPJ
+              <label htmlFor="email" className="block text-sm font-medium text-zinc-700">
+                E-mail
               </label>
               <div className="mt-1">
                 <input
-                  id="cnpj"
-                  name="cnpj"
-                  type="text"
+                  id="email"
+                  name="email"
+                  type="email"
                   required
-                  value={cnpj}
-                  onChange={(e) => setCnpj(e.target.value)}
-                  placeholder="00.000.000/0000-00"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
                   className="appearance-none block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm placeholder-zinc-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>

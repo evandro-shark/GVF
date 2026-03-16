@@ -6,7 +6,8 @@ import { Wallet } from 'lucide-react';
 
 export function Register() {
   const [cnpj, setCnpj] = useState('');
-  const [name, setName] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,8 +22,8 @@ export function Register() {
 
     try {
       const cleanCnpj = cnpj.replace(/\D/g, '');
-      const response = await api.register({ cnpj: cleanCnpj, name, email, password });
-      login(response.token, response.user);
+      const response = await api.register({ cnpj: cleanCnpj, companyName, userName, email, password });
+      login(response.token, response.user, response.companies);
       navigate('/');
     } catch (err: any) {
       setError(err.message || 'Erro ao criar conta. Verifique os dados.');
@@ -63,35 +64,17 @@ export function Register() {
             )}
 
             <div>
-              <label htmlFor="cnpj" className="block text-sm font-medium text-zinc-700">
-                CNPJ
+              <label htmlFor="userName" className="block text-sm font-medium text-zinc-700">
+                Seu Nome
               </label>
               <div className="mt-1">
                 <input
-                  id="cnpj"
-                  name="cnpj"
+                  id="userName"
+                  name="userName"
                   type="text"
                   required
-                  value={cnpj}
-                  onChange={(e) => setCnpj(e.target.value)}
-                  placeholder="00.000.000/0000-00"
-                  className="appearance-none block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm placeholder-zinc-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-zinc-700">
-                Nome da Empresa
-              </label>
-              <div className="mt-1">
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm placeholder-zinc-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
@@ -128,6 +111,47 @@ export function Register() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm placeholder-zinc-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-zinc-200">
+              <h3 className="text-sm font-medium text-zinc-900 mb-4">Dados da Primeira Empresa</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="cnpj" className="block text-sm font-medium text-zinc-700">
+                    CNPJ
+                  </label>
+                  <div className="mt-1">
+                    <input
+                      id="cnpj"
+                      name="cnpj"
+                      type="text"
+                      required
+                      value={cnpj}
+                      onChange={(e) => setCnpj(e.target.value)}
+                      placeholder="00.000.000/0000-00"
+                      className="appearance-none block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm placeholder-zinc-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="companyName" className="block text-sm font-medium text-zinc-700">
+                    Nome da Empresa
+                  </label>
+                  <div className="mt-1">
+                    <input
+                      id="companyName"
+                      name="companyName"
+                      type="text"
+                      required
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      className="appearance-none block w-full px-3 py-2 border border-zinc-300 rounded-md shadow-sm placeholder-zinc-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

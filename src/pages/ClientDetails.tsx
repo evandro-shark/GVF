@@ -45,7 +45,7 @@ export function ClientDetails() {
       await api.createTransaction({
         client_id: Number(id),
         type,
-        amount: Number(amount),
+        amount: Number(amount.replace(',', '.')),
         description,
         due_date: type === 'sale' && dueDate ? new Date(dueDate).toISOString() : undefined
       });
@@ -55,7 +55,7 @@ export function ClientDetails() {
       setDueDate('');
       fetchData();
     } catch (error) {
-      alert('Erro ao criar transação');
+      alert(error instanceof Error ? error.message : 'Erro ao criar transação');
     }
   };
 
@@ -132,7 +132,7 @@ export function ClientDetails() {
             <tbody className="bg-white divide-y divide-zinc-200">
               {transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-sm text-zinc-500">Nenhuma transação registrada.</td>
+                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-zinc-500">Nenhuma transação registrada.</td>
                 </tr>
               ) : (
                 transactions.map((t) => (

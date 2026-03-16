@@ -1,14 +1,15 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
-import { LayoutDashboard, Users, ReceiptText, Menu, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, ReceiptText, Menu, LogOut, Building2, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
 
 export function Layout() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isCompanyMenuOpen, setCompanyMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, companies, activeCompany, logout, setActiveCompany } = useAuth();
 
   const navItems = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -40,6 +41,48 @@ export function Layout() {
           <h1 className="text-xl font-semibold text-zinc-900">FinDash</h1>
         </div>
         
+        {/* Company Selector */}
+        {companies.length > 0 && activeCompany && (
+          <div className="p-4 border-b border-zinc-200 relative">
+            <button 
+              onClick={() => setCompanyMenuOpen(!isCompanyMenuOpen)}
+              className="w-full flex items-center justify-between bg-zinc-50 hover:bg-zinc-100 p-2 rounded-lg border border-zinc-200 transition-colors"
+            >
+              <div className="flex items-center gap-2 overflow-hidden">
+                <Building2 className="w-4 h-4 text-zinc-500 shrink-0" />
+                <div className="flex flex-col items-start truncate">
+                  <span className="text-sm font-medium text-zinc-900 truncate">{activeCompany.name}</span>
+                  <span className="text-xs text-zinc-500 truncate">{activeCompany.cnpj}</span>
+                </div>
+              </div>
+              <ChevronDown className={cn("w-4 h-4 text-zinc-400 transition-transform", isCompanyMenuOpen && "rotate-180")} />
+            </button>
+
+            {isCompanyMenuOpen && (
+              <div className="absolute top-full left-4 right-4 mt-1 bg-white border border-zinc-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                <div className="max-h-48 overflow-y-auto">
+                  {companies.map((company) => (
+                    <button
+                      key={company.id}
+                      onClick={() => {
+                        setActiveCompany(company);
+                        setCompanyMenuOpen(false);
+                      }}
+                      className={cn(
+                        "w-full text-left px-4 py-2 text-sm hover:bg-zinc-50 transition-colors",
+                        activeCompany.id === company.id ? "bg-indigo-50 text-indigo-700 font-medium" : "text-zinc-700"
+                      )}
+                    >
+                      <div className="truncate">{company.name}</div>
+                      <div className="text-xs text-zinc-500 truncate">{company.cnpj}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.href || 
@@ -68,7 +111,7 @@ export function Layout() {
             <div className="flex items-center justify-between">
               <div className="flex flex-col overflow-hidden">
                 <span className="text-sm font-medium text-zinc-900 truncate">{user.name}</span>
-                <span className="text-xs text-zinc-500 truncate">{user.cnpj}</span>
+                <span className="text-xs text-zinc-500 truncate">{user.email}</span>
               </div>
               <button
                 onClick={handleLogout}

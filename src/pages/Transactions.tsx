@@ -29,7 +29,7 @@ export function Transactions() {
     try {
       await api.createTransaction({
         type,
-        amount: Number(amount),
+        amount: Number(amount.replace(',', '.')),
         description
       });
       setIsModalOpen(false);
@@ -37,7 +37,7 @@ export function Transactions() {
       setDescription('');
       fetchTransactions();
     } catch (error) {
-      alert('Erro ao criar transação');
+      alert(error instanceof Error ? error.message : 'Erro ao criar transação');
     }
   };
 
