@@ -39,6 +39,7 @@ export interface DashboardStats {
   totalExpenses: number;
   accountsReceivable: number;
   netBalance: number;
+  receivableOverdue: number;
   receivableToday: number;
   receivableMonth: number;
   receivableYear: number;

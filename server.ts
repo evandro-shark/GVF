@@ -362,12 +362,13 @@ async function startServer() {
       
       // Accounts receivable (Total Sales - Total Payments)
       const totalPayments = (db.prepare("SELECT SUM(amount) as total FROM transactions WHERE type = 'payment' AND company_id = ?").get(companyId) as any).total || 0;
-      const accountsReceivable = totalSales - totalPayments;
+      let accountsReceivable = 0; // Calculated per client below to avoid negative balances
       
       // Net Balance (Total Received - Total Expenses)
       const netBalance = totalReceived - totalExpenses;
 
       // Calculate receivables by period using FIFO allocation
+      let receivableOverdue = 0;
       let receivableToday = 0;
       let receivableMonth = 0;
       let receivableYear = 0;
@@ -388,6 +389,7 @@ async function startServer() {
         let unpaidBalance = totalClientSales - totalClientPayments;
         
         if (unpaidBalance > 0) {
+          accountsReceivable += unpaidBalance;
           const salesDesc = [...sales].sort((a, b) => new Date(b.due_date).getTime() - new Date(a.due_date).getTime());
           
           for (const sale of salesDesc) {
@@ -398,14 +400,19 @@ async function startServer() {
             
             const saleDateStr = sale.due_date ? sale.due_date.split('T')[0] : '';
             
-            if (saleDateStr === todayStr) {
-              receivableToday += unpaidAmount;
-            }
-            if (saleDateStr.startsWith(monthStr)) {
-              receivableMonth += unpaidAmount;
-            }
-            if (saleDateStr.startsWith(yearStr)) {
-              receivableYear += unpaidAmount;
+            if (saleDateStr) {
+              if (saleDateStr < todayStr) {
+                receivableOverdue += unpaidAmount;
+              } else if (saleDateStr === todayStr) {
+                receivableToday += unpaidAmount;
+              }
+              
+              if (saleDateStr.startsWith(monthStr)) {
+                receivableMonth += unpaidAmount;
+              }
+              if (saleDateStr.startsWith(yearStr)) {
+                receivableYear += unpaidAmount;
+              }
             }
           }
         }
@@ -426,6 +433,7 @@ async function startServer() {
         totalExpenses,
         accountsReceivable,
         netBalance,
+        receivableOverdue,
         receivableToday,
         receivableMonth,
         receivableYear,

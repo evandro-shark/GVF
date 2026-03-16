@@ -12,6 +12,7 @@ export function Transactions() {
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   const fetchTransactions = () => {
     setIsLoading(true);
@@ -26,15 +27,34 @@ export function Transactions() {
 
   const handleCreateTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    let normalizedAmount = amount;
+    if (normalizedAmount.includes(',')) {
+      normalizedAmount = normalizedAmount.replace(/\./g, '').replace(',', '.');
+    }
+    const parsedAmount = Number(normalizedAmount);
+    
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      alert('Por favor, insira um valor válido maior que zero.');
+      return;
+    }
+
+    if (!date) {
+      alert('Por favor, insira uma data válida.');
+      return;
+    }
+
     try {
       await api.createTransaction({
         type,
-        amount: Number(amount.replace(',', '.')),
-        description
+        amount: parsedAmount,
+        description,
+        date: new Date(date).toISOString()
       });
       setIsModalOpen(false);
       setAmount('');
       setDescription('');
+      setDate(new Date().toISOString().split('T')[0]);
       fetchTransactions();
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Erro ao criar transação');
@@ -134,11 +154,10 @@ export function Transactions() {
 
       {/* Modal Nova Despesa/Receita */}
       {isModalOpen && (
-        <div className="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
             <div className="fixed inset-0 bg-zinc-500 bg-opacity-75 transition-opacity" onClick={() => setIsModalOpen(false)}></div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
               <form onSubmit={handleCreateTransaction}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <h3 className="text-lg leading-6 font-medium text-zinc-900" id="modal-title">Nova Despesa/Receita Geral</h3>
@@ -157,12 +176,22 @@ export function Transactions() {
                     <div>
                       <label className="block text-sm font-medium text-zinc-700">Valor (R$)</label>
                       <input
-                        type="number"
-                        step="0.01"
-                        min="0.01"
+                        type="text"
+                        inputMode="decimal"
                         required
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
+                        placeholder="0,00"
+                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-zinc-300 rounded-md py-2 px-3 border"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700">Data da Transação</label>
+                      <input
+                        type="date"
+                        required
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-zinc-300 rounded-md py-2 px-3 border"
                       />
                     </div>

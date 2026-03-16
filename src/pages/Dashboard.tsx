@@ -86,7 +86,13 @@ export function Dashboard() {
 
       <div>
         <h3 className="text-lg font-medium text-zinc-900 mt-8 mb-4">Projeção de Recebimentos</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="bg-white overflow-hidden rounded-xl shadow-sm border border-zinc-200 p-5">
+            <dt className="text-sm font-medium text-zinc-500 truncate">Em Atraso</dt>
+            <dd className="mt-1 text-2xl font-semibold text-red-600">
+              {formatCurrency(stats.receivableOverdue)}
+            </dd>
+          </div>
           <div className="bg-white overflow-hidden rounded-xl shadow-sm border border-zinc-200 p-5">
             <dt className="text-sm font-medium text-zinc-500 truncate">A Receber Hoje</dt>
             <dd className="mt-1 text-2xl font-semibold text-indigo-600">
